@@ -9,18 +9,19 @@ namespace ManejoPresupuesto.Controllers
     {
         private readonly IRepositorioTiposCuentas repositorioTiposCuentas;
         private readonly IRepositorioCuentas repositorioCuentas;
+        private readonly IServicioUsuarios servicioUsuarios;
 
         public CuentasController(IRepositorioTiposCuentas repositorioTiposCuentas, 
-            IServicioUsuarios ServicioUsuarios, IRepositorioCuentas repositorioCuentas)
+            IServicioUsuarios servicioUsuarios, IRepositorioCuentas repositorioCuentas)
         {
             this.repositorioTiposCuentas = repositorioTiposCuentas;
-            this.ServicioUsuarios = ServicioUsuarios;
+            this.servicioUsuarios = servicioUsuarios;
             this.repositorioCuentas = repositorioCuentas;
         }
 
         public async Task<IActionResult> Index()
         {
-            var usuarioId = ServicioUsuarios.ObtenerUsuarioId();
+            var usuarioId = servicioUsuarios.ObtenerUsuarioId();
             var cuentasConTipoCuenta = await repositorioCuentas.Buscar(usuarioId);
 
             var modelo = cuentasConTipoCuenta
@@ -34,11 +35,9 @@ namespace ManejoPresupuesto.Controllers
             return View(modelo);
         }
 
-        public IServicioUsuarios ServicioUsuarios { get; }
-
         public async Task<IActionResult> Crear()
         {
-            var usuarioId = ServicioUsuarios.ObtenerUsuarioId();            
+            var usuarioId = servicioUsuarios.ObtenerUsuarioId();            
             var modelo = new CuentaCreacionViewModel();
             modelo.TiposCuentas = await ObtenerTiposCuentas(usuarioId);
             return View(modelo);
@@ -47,7 +46,7 @@ namespace ManejoPresupuesto.Controllers
         [HttpPost]
         public async Task<IActionResult> Crear(CuentaCreacionViewModel cuenta)
         {
-            var usuarioId = ServicioUsuarios.ObtenerUsuarioId();
+            var usuarioId = servicioUsuarios.ObtenerUsuarioId();
             var tipoCuenta = await repositorioTiposCuentas.ObtenerPorId(cuenta.TipoCuentaId, usuarioId);
 
             if (tipoCuenta is null)
@@ -63,6 +62,10 @@ namespace ManejoPresupuesto.Controllers
 
             await repositorioCuentas.Crear(cuenta);
             return RedirectToAction("Index");
+        }
+
+        public async Task<IActionResult> Editar()
+        {
 
         }
 
